@@ -81,6 +81,16 @@ def extract_evolution_chain(chain_data: dict) -> list[dict]:
     return edges
 
 
+def extract_image_url(pokemon_data: dict) -> str | None:
+    """pokemon 엔드포인트 JSON에서 대표 이미지 URL을 뽑는다.
+
+    공식 아트워크가 있으면 그걸 쓰고, 없으면 기본 스프라이트로 대체한다.
+    """
+    sprites = pokemon_data["sprites"]
+    official_artwork = sprites.get("other", {}).get("official-artwork", {})
+    return official_artwork.get("front_default") or sprites.get("front_default")
+
+
 def extract_types(pokemon_data: dict) -> list[str]:
     """pokemon 엔드포인트 JSON에서 타입을 slot 순서대로 한글 이름 리스트로 추출한다."""
     sorted_types = sorted(pokemon_data["types"], key=lambda t: t["slot"])

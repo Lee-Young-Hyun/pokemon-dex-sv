@@ -13,6 +13,7 @@ from crawler.bulbapedia_scraper import (
 from crawler.pokeapi_client import (
     extract_basic_info,
     extract_evolution_chain,
+    extract_image_url,
     extract_move_name_ko,
     extract_moves,
     extract_types,
@@ -34,6 +35,7 @@ def build_pokemon_record(name_en: str, fetcher) -> dict:
     basic = extract_basic_info(species)
     types_ko = extract_types(pokemon)
     moves = extract_moves(pokemon)
+    image_url = extract_image_url(pokemon)
 
     move_names_ko: dict[str, str] = {}
     for slug in [m["move"] for m in moves["level_up"]] + moves["machine"]:
@@ -69,6 +71,7 @@ def build_pokemon_record(name_en: str, fetcher) -> dict:
     return {
         "dex_number": basic["dex_number"],
         "name_ko": basic["name_ko"],
+        "image_url": image_url,
         "types": types_ko,
         "evolution": evolution_ko,
         "moves": {

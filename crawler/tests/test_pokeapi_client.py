@@ -8,6 +8,7 @@ from crawler.pokeapi_client import (
     extract_moves,
     extract_move_name_ko,
     extract_evolution_chain,
+    extract_image_url,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -104,3 +105,17 @@ def test_extract_evolution_chain_returns_ordered_edges_with_conditions():
         {"from": "pichu", "to": "pikachu", "condition": "친밀도 220 이상"},
         {"from": "pikachu", "to": "raichu", "condition": "아이템(번개의돌) 사용"},
     ]
+
+
+def test_extract_image_url_returns_official_artwork():
+    pokemon_data = load_fixture("pikachu_pokemon.json")
+
+    url = extract_image_url(pokemon_data)
+
+    assert url == "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
+
+
+def test_extract_image_url_falls_back_to_default_sprite_when_no_artwork():
+    pokemon_data = {"sprites": {"front_default": "https://example.com/25.png", "other": {}}}
+
+    assert extract_image_url(pokemon_data) == "https://example.com/25.png"
