@@ -39,6 +39,17 @@ def test_extract_sv_locations_splits_base_game_and_dlc():
     assert "Vert Sector 8" not in result["dlc"]
 
 
+def test_extract_sv_locations_recognizes_evolve_only_acquisition():
+    # 나로테(floragato)처럼 야생에 없고 진화로만 얻는 포켓몬은
+    # 표 안에 지역명이 아니라 "Evolve <이전 진화형>" 문장이 들어있다.
+    table_html = load_fixture_html("bulbapedia_floragato_locations_table.html")
+
+    result = extract_sv_locations(table_html)
+
+    assert result["base_game"] == ["Sprigatito에서 진화"]
+    assert result["dlc"] == []
+
+
 def test_translate_locations_converts_known_names_to_korean():
     raw = {
         "base_game": ["South Province (Area Two)", "Artazon", "Tera Raid Battle"],

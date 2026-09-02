@@ -42,6 +42,22 @@ def find_locations_table_html(full_page_html: str) -> str | None:
     return str(table)
 
 
+def _parse_location_cell(el) -> list[str]:
+    """지역 목록 셀 하나를 사람이 읽을 수 있는 목록으로 바꾼다.
+
+    나오하 계열의 나로테/마스카나처럼 야생에 없고 진화로만 얻는 포켓몬은
+    지역 링크 대신 "Evolve <이전 진화형>" 문장이 들어있다 - 이 경우 링크 title을
+    그대로 나열하면("Evolution", "Sprigatito (Pokémon)") 의미 없는 값이 되므로
+    "<이전 진화형>에서 진화" 형태로 바꿔준다.
+    """
+    text = el.get_text(" ", strip=True)
+    if text.startswith("Evolve "):
+        pre_evolution = text[len("Evolve "):]
+        return [f"{pre_evolution}에서 진화"]
+
+    return [a["title"] for a in el.find_all("a") if a.get("title")]
+
+
 def extract_sv_locations(table_html: str) -> dict:
     """'Game locations' 표 HTML에서 스칼렛/바이올렛 본편·DLC 지역명 목록을 추출한다.
 
@@ -65,7 +81,7 @@ def extract_sv_locations(table_html: str) -> dict:
                 pending_titles.append(title)
                 continue
 
-            locations = [a["title"] for a in el.find_all("a") if a.get("title")]
+            locations = _parse_location_cell(el)
             # 스칼렛/바이올렛처럼 th가 여러 개(Scarlet, Violet)라도 같은 제목을 가리키면
             # 지역 목록은 한 번만 반영한다 (중복 방지).
             for title in set(pending_titles):
