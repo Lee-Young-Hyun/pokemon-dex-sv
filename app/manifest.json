@@ -1,0 +1,15 @@
+{
+  "name": "파르데아 도감",
+  "short_name": "파르데아도감",
+  "description": "스칼렛·바이올렛 포켓몬 검색 도감",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f1e7",
+  "theme_color": "#c1443a",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

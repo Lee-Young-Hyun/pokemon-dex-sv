@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>파르데아 도감</title>
+<meta name="description" content="스칼렛·바이올렛 포켓몬 검색 도감">
+<meta name="theme-color" content="#c1443a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gothic+A1:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="scarlet">스칼렛</span><span class="dot">·</span><span class="violet">바이올렛</span> 도감</h1>
+  <p class="subtitle">포켓몬 한글 이름으로 타입 · 진화 · 기술 · 입수 방법을 바로 찾아봅니다.</p>
+
+  <div class="search-area">
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search-input" type="text" placeholder="포켓몬 이름을 입력하세요" autocomplete="off" aria-label="포켓몬 검색" role="combobox" aria-controls="suggestions" />
+      <span class="search-count" id="search-count"></span>
+    </div>
+    <div class="suggestions" id="suggestions" role="listbox" hidden></div>
+  </div>
+
+  <main>
+    <div class="card" id="detail-card"></div>
+  </main>
+
+  <footer class="note">파르데아 도감 · 개인 학습용 로컬 검색 도구 · 데이터 출처: PokeAPI, Bulbapedia</footer>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

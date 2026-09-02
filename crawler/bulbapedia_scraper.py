@@ -42,20 +42,39 @@ def find_locations_table_html(full_page_html: str) -> str | None:
     return str(table)
 
 
+# 지역이 아닌 메타 링크(진화/전송 출처, 타입 페이지 등). 유노바/히스이 폼처럼
+# 여러 폼이 있는 포켓몬은 칸 안에 필드 지역과 이런 메타 정보가 함께 섞여 나온다.
+NON_LOCATION_TITLES = {"Evolution", "Pokémon HOME", "Pokémon Legends: Arceus", "Terastal phenomenon", "Type"}
+
+
+def _is_location_link(title: str) -> bool:
+    if title in NON_LOCATION_TITLES:
+        return False
+    if title.endswith("(type)"):
+        return False
+    if title.lower().endswith("form"):  # 예: "Hisuian form", "Kalosian Form"
+        return False
+    return True
+
+
 def _parse_location_cell(el) -> list[str]:
     """지역 목록 셀 하나를 사람이 읽을 수 있는 목록으로 바꾼다.
 
-    나오하 계열의 나로테/마스카나처럼 야생에 없고 진화로만 얻는 포켓몬은
-    지역 링크 대신 "Evolve <이전 진화형>" 문장이 들어있다 - 이 경우 링크 title을
-    그대로 나열하면("Evolution", "Sprigatito (Pokémon)") 의미 없는 값이 되므로
-    "<이전 진화형>에서 진화" 형태로 바꿔준다.
+    메타 링크(진화 출처, 폼 각주 등)는 걸러내고, 실제 지역만 남긴다.
+    나오하 계열의 나로테/마스카나처럼 야생에 없고 진화로만 얻는 포켓몬(필드
+    지역 없이 진화 대상 종 링크만 있는 경우)은 "<이전 진화형>에서 진화"로 바꿔준다.
     """
-    text = el.get_text(" ", strip=True)
-    if text.startswith("Evolve "):
-        pre_evolution = text[len("Evolve "):]
-        return [f"{pre_evolution}에서 진화"]
+    all_titles = [a["title"] for a in el.find_all("a") if a.get("title")]
+    location_titles = [t for t in all_titles if _is_location_link(t)]
 
-    return [a["title"] for a in el.find_all("a") if a.get("title")]
+    species_titles = [t[: -len(" (Pokémon)")] for t in location_titles if t.endswith(" (Pokémon)")]
+    non_species_locations = [t for t in location_titles if not t.endswith(" (Pokémon)")]
+
+    if not non_species_locations and species_titles:
+        unique_species = list(dict.fromkeys(species_titles))  # 순서 유지하며 중복 제거
+        return [f"{s}에서 진화" for s in unique_species]
+
+    return non_species_locations
 
 
 def extract_sv_locations(table_html: str) -> dict:

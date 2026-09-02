@@ -50,6 +50,27 @@ def test_extract_sv_locations_recognizes_evolve_only_acquisition():
     assert result["dlc"] == []
 
 
+def test_extract_sv_locations_filters_out_meta_links_from_mixed_form_cell():
+    # 릴리간트(유노바/히스이 두 폼이 있는 포켓몬)는 칸 안에 필드 지역과
+    # "Pokémon HOME 전송" · "Evolution" · "Petilil (Pokémon)" 같은 폼 각주가
+    # 뒤섞여 있다 - 진짜 지역만 남고, 진화/전송 관련 메타 링크는 걸러져야 한다.
+    table_html = load_fixture_html("bulbapedia_lilligant_locations_table.html")
+
+    result = extract_sv_locations(table_html)
+
+    assert result["base_game"] == [
+        "South Province (Area Four)",
+        "South Province (Area Six)",
+        "West Province (Area Three)",
+        "North Province (Area Three)",
+        "Tera Raid Battle",
+        "List of 4★ Tera Raid Battles (Paldea)",
+    ]
+    # DLC 칸은 필드 지역이 전혀 없고 "Petilil을 진화시켜서"라는 설명뿐이므로
+    # 진화 출처 하나로 정리된다 (중복 제거, 메타 링크는 섞이지 않음)
+    assert result["dlc"] == ["Petilil에서 진화"]
+
+
 def test_translate_locations_converts_known_names_to_korean():
     raw = {
         "base_game": ["South Province (Area Two)", "Artazon", "Tera Raid Battle"],
