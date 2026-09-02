@@ -102,10 +102,19 @@ h1 .violet { color: var(--violet); }
 
 .search-area { position: relative; margin-bottom: 18px; }
 
+.search-meta {
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 6px;
+}
+
 .search-box {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
   background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: 12px;
@@ -126,7 +135,6 @@ h1 .violet { color: var(--violet); }
   font-size: 16px;
 }
 .search-box input::placeholder { color: var(--text-muted); }
-.search-count { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
 
 .suggestions {
   position: absolute;
@@ -211,26 +219,24 @@ section.block { margin-bottom: 22px; }
 section.block:last-child { margin-bottom: 0; }
 section.block h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin: 0 0 10px; font-weight: 700; }
 
-.evo-chain { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 4px; }
+/* 화면 폭과 무관하게 항상 세로로 쌓는다 - 가로로 이어붙이면 중간에 끊길 때 보기 나쁘다 */
+.evo-chain { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; max-width: 100%; }
 .evo-node {
+  max-width: 100%;
   padding: 7px 14px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border);
   font-size: 14px; font-weight: 700; font-family: inherit; color: var(--text); cursor: default;
-  white-space: nowrap;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 button.evo-node { cursor: pointer; transition: transform 0.08s ease, border-color 0.15s ease; }
 button.evo-node:hover { border-color: var(--accent); transform: translateY(-1px); }
 button.evo-node:disabled { cursor: not-allowed; color: var(--text-muted); opacity: 0.6; }
 .evo-node.current { background: var(--accent); color: #fff; border-color: var(--accent); }
-.evo-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 2px; flex: 0 0 auto; }
-.evo-arrow svg { color: var(--text-muted); flex: 0 0 auto; }
-.evo-arrow .cond { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
-
-/* 좁은 화면에서는 가로로 이어붙이면 중간에 어색하게 끊기므로 세로로 쌓는다 */
-@media (max-width: 420px) {
-  .evo-chain { flex-direction: column; align-items: flex-start; gap: 2px; }
-  .evo-arrow { flex-direction: row; align-items: center; gap: 6px; padding: 2px 0 2px 16px; }
-  .evo-arrow svg { transform: rotate(90deg); }
+.evo-arrow {
+  display: flex; flex-direction: row; align-items: center; gap: 6px;
+  padding: 2px 0 2px 16px; flex: 0 0 auto; max-width: 100%;
 }
+.evo-arrow svg { color: var(--text-muted); flex: 0 0 auto; transform: rotate(90deg); }
+.evo-arrow .cond { font-size: 11px; color: var(--text-muted); white-space: normal; overflow-wrap: anywhere; }
 .evo-single { color: var(--text-muted); font-size: 14px; }
 
 .moves-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
