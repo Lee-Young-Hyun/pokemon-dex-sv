@@ -11,6 +11,7 @@ from crawler.bulbapedia_scraper import (
     translate_locations,
 )
 from crawler.pokeapi_client import (
+    default_variety_name,
     extract_basic_info,
     extract_evolution_chain,
     extract_image_url,
@@ -22,15 +23,26 @@ from crawler.pokeapi_client import (
 POKEAPI_BASE = "https://pokeapi.co/api/v2"
 
 
-def _bulbapedia_url(name_en: str) -> str:
-    # PokeAPI 슬러그(예: "pikachu")를 Bulbapedia 문서 제목(예: "Pikachu_(Pokémon)")으로 바꾼다.
-    return f"https://bulbapedia.bulbagarden.net/wiki/{name_en.capitalize()}_(Pok%C3%A9mon)"
+def bulbapedia_url(name_en: str) -> str:
+    """PokeAPI 슬러그를 Bulbapedia 문서 제목으로 바꾼다.
+
+    한 단어(예: "pikachu")면 "Pikachu_(Pokémon)". 여러 단어가 하이픈으로
+    이어진 이름(파라독스 포켓몬 등, 예: "great-tusk")은 단어마다 대문자로
+    시작하고 밑줄로 이어 "Great_Tusk_(Pokémon)"가 된다 - 앞글자만 대문자로 바꾸면
+    "Great-tusk"가 되어 실제 Bulbapedia 문서를 찾지 못한다.
+    """
+    words = name_en.split("-")
+    title = "_".join(w.capitalize() for w in words)
+    return f"https://bulbapedia.bulbagarden.net/wiki/{title}_(Pok%C3%A9mon)"
 
 
 def build_pokemon_record(name_en: str, fetcher) -> dict:
     """PokeAPI 슬러그(name_en) 하나에 대해 도감 레코드를 만든다."""
     species = fetcher.get_json(f"{POKEAPI_BASE}/pokemon-species/{name_en}")
-    pokemon = fetcher.get_json(f"{POKEAPI_BASE}/pokemon/{name_en}")
+    # 도감 종 이름 그대로는 /pokemon/ 리소스가 없는 경우(바스컬린 등 폼이 있는 종)가 있어,
+    # species가 가리키는 기본 폼 이름을 실제로 사용한다.
+    variety_name = default_variety_name(species)
+    pokemon = fetcher.get_json(f"{POKEAPI_BASE}/pokemon/{variety_name}")
 
     basic = extract_basic_info(species)
     types_ko = extract_types(pokemon)
@@ -63,7 +75,7 @@ def build_pokemon_record(name_en: str, fetcher) -> dict:
         for edge in raw_edges
     ]
 
-    full_page_html = fetcher.get_html(_bulbapedia_url(name_en))
+    full_page_html = fetcher.get_html(bulbapedia_url(name_en))
     table_html = find_locations_table_html(full_page_html)
     sv_locations_raw = extract_sv_locations(table_html) if table_html else {"base_game": [], "dlc": []}
     sv_locations = translate_locations(sv_locations_raw)

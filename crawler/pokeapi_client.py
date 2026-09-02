@@ -81,6 +81,18 @@ def extract_evolution_chain(chain_data: dict) -> list[dict]:
     return edges
 
 
+def default_variety_name(species_data: dict) -> str:
+    """species JSON에서 실제 /pokemon/ 엔드포인트에 쓸 기본 폼 이름을 찾는다.
+
+    바스컬린(basculin)처럼 도감 종 이름 자체로는 /pokemon/ 리소스가 없고,
+    varieties 중 is_default: true로 표시된 폼(예: basculin-red-striped)이 실제 이름이다.
+    """
+    for variety in species_data.get("varieties", []):
+        if variety.get("is_default"):
+            return variety["pokemon"]["name"]
+    return species_data["name"]
+
+
 def extract_image_url(pokemon_data: dict) -> str | None:
     """pokemon 엔드포인트 JSON에서 대표 이미지 URL을 뽑는다.
 

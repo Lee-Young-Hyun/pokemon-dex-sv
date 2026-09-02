@@ -9,6 +9,7 @@ from crawler.pokeapi_client import (
     extract_move_name_ko,
     extract_evolution_chain,
     extract_image_url,
+    default_variety_name,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -119,3 +120,23 @@ def test_extract_image_url_falls_back_to_default_sprite_when_no_artwork():
     pokemon_data = {"sprites": {"front_default": "https://example.com/25.png", "other": {}}}
 
     assert extract_image_url(pokemon_data) == "https://example.com/25.png"
+
+
+def test_default_variety_name_returns_the_pokemon_marked_default():
+    # 바스컬린처럼 도감 종 이름(basculin)만으로는 /pokemon/ 엔드포인트가 없고,
+    # 실제 기본 폼은 varieties 중 is_default: true인 쪽이다.
+    species_data = {
+        "name": "basculin",
+        "varieties": [
+            {"is_default": True, "pokemon": {"name": "basculin-red-striped"}},
+            {"is_default": False, "pokemon": {"name": "basculin-blue-striped"}},
+        ],
+    }
+
+    assert default_variety_name(species_data) == "basculin-red-striped"
+
+
+def test_default_variety_name_falls_back_to_species_name_without_varieties():
+    species_data = {"name": "pikachu", "varieties": [{"is_default": True, "pokemon": {"name": "pikachu"}}]}
+
+    assert default_variety_name(species_data) == "pikachu"
