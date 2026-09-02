@@ -276,14 +276,17 @@ footer.note { margin-top: 20px; font-size: 11.5px; color: var(--text-muted); tex
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  display: flex;
+  display: none; /* hidden 속성이 붙어있을 때의 기본값 */
   align-items: flex-end;
   justify-content: center;
   padding: 0;
   z-index: 100;
 }
+/* author CSS가 무조건 display:flex를 주면 UA의 [hidden]{display:none}을 덮어써서
+   hidden 속성을 붙여도 계속 보이는 버그가 생긴다 - hidden이 없을 때만 flex로 켠다 */
+.tooltip-backdrop:not([hidden]) { display: flex; }
 @media (min-width: 520px) {
-  .tooltip-backdrop { align-items: center; padding: 20px; }
+  .tooltip-backdrop:not([hidden]) { align-items: center; padding: 20px; }
 }
 .tooltip-card {
   position: relative;
