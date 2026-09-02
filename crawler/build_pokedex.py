@@ -22,6 +22,16 @@ from crawler.pokeapi_client import (
 
 POKEAPI_BASE = "https://pokeapi.co/api/v2"
 
+# PokeAPI 슬러그의 하이픈은 보통 "단어 구분"(예: "great-tusk" -> "Great Tusk")이지만,
+# 재앙의 네 몸(우행/파오젠/딩루/이유이)처럼 영문 이름 자체에 진짜 하이픈이 있는
+# 경우도 있다 - 이런 예외만 따로 표로 관리한다.
+BULBAPEDIA_TITLE_OVERRIDES = {
+    "wo-chien": "Wo-Chien",
+    "chien-pao": "Chien-Pao",
+    "ting-lu": "Ting-Lu",
+    "chi-yu": "Chi-Yu",
+}
+
 
 def bulbapedia_url(name_en: str) -> str:
     """PokeAPI 슬러그를 Bulbapedia 문서 제목으로 바꾼다.
@@ -31,8 +41,11 @@ def bulbapedia_url(name_en: str) -> str:
     시작하고 밑줄로 이어 "Great_Tusk_(Pokémon)"가 된다 - 앞글자만 대문자로 바꾸면
     "Great-tusk"가 되어 실제 Bulbapedia 문서를 찾지 못한다.
     """
-    words = name_en.split("-")
-    title = "_".join(w.capitalize() for w in words)
+    if name_en in BULBAPEDIA_TITLE_OVERRIDES:
+        title = BULBAPEDIA_TITLE_OVERRIDES[name_en]
+    else:
+        words = name_en.split("-")
+        title = "_".join(w.capitalize() for w in words)
     return f"https://bulbapedia.bulbagarden.net/wiki/{title}_(Pok%C3%A9mon)"
 
 
