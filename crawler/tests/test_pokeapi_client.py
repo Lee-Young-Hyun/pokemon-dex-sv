@@ -7,6 +7,7 @@ from crawler.pokeapi_client import (
     format_evolution_condition,
     extract_moves,
     extract_move_name_ko,
+    extract_evolution_chain,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -80,3 +81,14 @@ def test_extract_move_name_ko_returns_korean_move_name():
     move_data = load_fixture("move_thunderbolt.json")
 
     assert extract_move_name_ko(move_data) == "10만볼트"
+
+
+def test_extract_evolution_chain_returns_ordered_edges_with_conditions():
+    chain_data = load_fixture("evolution_chain_10.json")
+
+    edges = extract_evolution_chain(chain_data)
+
+    assert edges == [
+        {"from": "pichu", "to": "pikachu", "condition": "친밀도 220 이상"},
+        {"from": "pikachu", "to": "raichu", "condition": "아이템(thunder-stone) 사용"},
+    ]

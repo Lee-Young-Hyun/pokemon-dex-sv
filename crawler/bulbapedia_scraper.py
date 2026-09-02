@@ -10,6 +10,24 @@ BASE_GAME_TITLE = "Pokémon Scarlet and Violet"
 DLC_TITLE = "The Hidden Treasure of Area Zero"
 
 
+def find_locations_table_html(full_page_html: str) -> str | None:
+    """Bulbapedia 포켓몬 페이지 전체 HTML에서 'Game locations' 표를 찾아 그 부분만 반환한다.
+
+    스칼렛/바이올렛 헤더(<a title="Pokémon Scarlet and Violet">)를 기준으로,
+    그 헤더를 담고 있는 가장 가까운 <table> 조상을 찾는다. 없으면 None.
+    """
+    soup = BeautifulSoup(full_page_html, "html.parser")
+    header_link = soup.find("a", title=BASE_GAME_TITLE)
+    if header_link is None:
+        return None
+
+    table = header_link.find_parent("table")
+    if table is None:
+        return None
+
+    return str(table)
+
+
 def extract_sv_locations(table_html: str) -> dict:
     """'Game locations' 표 HTML에서 스칼렛/바이올렛 본편·DLC 지역명 목록을 추출한다.
 

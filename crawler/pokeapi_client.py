@@ -41,6 +41,32 @@ def extract_move_name_ko(move_data: dict) -> str:
     return _korean_name(move_data["names"])
 
 
+def extract_evolution_chain(chain_data: dict) -> list[dict]:
+    """evolution-chain 엔드포인트 JSON을 (이전 종 -> 다음 종, 조건) 간선 리스트로 펼친다.
+
+    종 이름은 아직 영문 슬러그(예: "pikachu")다. 한글 이름으로 바꾸는 건
+    각 종의 species 데이터가 필요하므로 이 함수의 책임 밖이다 (오케스트레이션에서 처리).
+    """
+    edges = []
+
+    def walk(node: dict) -> None:
+        from_species = node["species"]["name"]
+        for child in node["evolves_to"]:
+            to_species = child["species"]["name"]
+            detail = child["evolution_details"][0]
+            edges.append(
+                {
+                    "from": from_species,
+                    "to": to_species,
+                    "condition": format_evolution_condition(detail),
+                }
+            )
+            walk(child)
+
+    walk(chain_data["chain"])
+    return edges
+
+
 def extract_types(pokemon_data: dict) -> list[str]:
     """pokemon 엔드포인트 JSON에서 타입을 slot 순서대로 한글 이름 리스트로 추출한다."""
     sorted_types = sorted(pokemon_data["types"], key=lambda t: t["slot"])
