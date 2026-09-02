@@ -47,6 +47,17 @@ def test_get_json_raises_when_response_has_error_status():
         fetcher.get_json("https://pokeapi.co/api/v2/pokemon/no-such-pokemon")
 
 
+def test_get_json_caches_by_url_and_skips_second_network_call():
+    session = FakeSession(FakeResponse(json_data={"name": "tackle"}))
+    fetcher = RateLimitedFetcher(delay_seconds=0, session=session)
+
+    first = fetcher.get_json("https://pokeapi.co/api/v2/move/tackle")
+    second = fetcher.get_json("https://pokeapi.co/api/v2/move/tackle")
+
+    assert first == second == {"name": "tackle"}
+    assert session.calls == ["https://pokeapi.co/api/v2/move/tackle"]  # 한 번만 호출됨
+
+
 def test_rate_limiting_enforces_minimum_delay_between_requests():
     session = FakeSession(FakeResponse(json_data={}))
     fetcher = RateLimitedFetcher(delay_seconds=0.05, session=session)
@@ -57,3 +68,16 @@ def test_rate_limiting_enforces_minimum_delay_between_requests():
     elapsed = time.perf_counter() - start
 
     assert elapsed >= 0.05
+
+
+def test_cached_url_does_not_incur_rate_limit_delay():
+    session = FakeSession(FakeResponse(json_data={}))
+    fetcher = RateLimitedFetcher(delay_seconds=0.2, session=session)
+
+    fetcher.get_json("https://example.com/1")  # 첫 호출: 딜레이 대상 아님(직전 요청 없음)
+
+    start = time.perf_counter()
+    fetcher.get_json("https://example.com/1")  # 캐시 적중: 딜레이 없이 즉시 반환
+    elapsed = time.perf_counter() - start
+
+    assert elapsed < 0.1

@@ -14,14 +14,24 @@ class RateLimitedFetcher:
         self.delay_seconds = delay_seconds
         self.session = session or requests.Session()
         self._last_request_time: float | None = None
+        # 같은 URL(기술/진화체인처럼 여러 포켓몬이 공유하는 자원)은 재요청하지 않는다.
+        self._cache: dict[str, object] = {}
 
     def get_json(self, url: str) -> dict:
+        if url in self._cache:
+            return self._cache[url]
         response = self._get(url)
-        return response.json()
+        data = response.json()
+        self._cache[url] = data
+        return data
 
     def get_html(self, url: str) -> str:
+        if url in self._cache:
+            return self._cache[url]
         response = self._get(url)
-        return response.text
+        text = response.text
+        self._cache[url] = text
+        return text
 
     def _get(self, url: str):
         self._wait_for_rate_limit()
