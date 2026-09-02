@@ -93,6 +93,47 @@ def default_variety_name(species_data: dict) -> str:
     return species_data["name"]
 
 
+DAMAGE_CLASS_KO = {"physical": "물리", "special": "특수", "status": "변화"}
+
+# 기술 설명(flavor text)의 한글 데이터는 PokeAPI 커뮤니티 데이터 특성상
+# 8세대(소드실드)까지만 있다. 스칼렛/바이올렛 설명이 없으면 이 순서로
+# 가장 최근 것을 대체로 쓴다 - 기술 설명은 세대가 바뀌어도 거의 안 바뀐다.
+KO_DESCRIPTION_VERSION_PRIORITY = [
+    "scarlet-violet",
+    "legends-arceus",
+    "sword-shield",
+    "lets-go-pikachu-lets-go-eevee",
+    "ultra-sun-ultra-moon",
+    "sun-moon",
+    "omega-ruby-alpha-sapphire",
+    "x-y",
+]
+
+
+def _extract_ko_description(flavor_text_entries: list[dict]) -> str | None:
+    by_version = {
+        e["version_group"]["name"]: e["flavor_text"]
+        for e in flavor_text_entries
+        if e["language"]["name"] == "ko"
+    }
+    for version in KO_DESCRIPTION_VERSION_PRIORITY:
+        if version in by_version:
+            return by_version[version].replace("\f", "\n").strip()
+    return None
+
+
+def extract_move_details(move_data: dict) -> dict:
+    """move 엔드포인트 JSON에서 위력/명중률/PP/분류/타입/한글 설명을 추출한다."""
+    return {
+        "power": move_data["power"],
+        "accuracy": move_data["accuracy"],
+        "pp": move_data["pp"],
+        "category": DAMAGE_CLASS_KO[move_data["damage_class"]["name"]],
+        "type": TYPE_NAME_KO[move_data["type"]["name"]],
+        "description": _extract_ko_description(move_data["flavor_text_entries"]),
+    }
+
+
 def extract_image_url(pokemon_data: dict) -> str | None:
     """pokemon 엔드포인트 JSON에서 대표 이미지 URL을 뽑는다.
 

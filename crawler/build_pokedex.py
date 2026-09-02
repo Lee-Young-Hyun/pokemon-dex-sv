@@ -15,6 +15,7 @@ from crawler.pokeapi_client import (
     extract_basic_info,
     extract_evolution_chain,
     extract_image_url,
+    extract_move_details,
     extract_move_name_ko,
     extract_moves,
     extract_types,
@@ -82,10 +83,13 @@ def build_pokemon_record(name_en: str, fetcher) -> dict:
     image_url = extract_image_url(pokemon)
 
     move_names_ko: dict[str, str] = {}
+    move_details_ko: dict[str, dict] = {}  # 한글 기술명 -> 위력/명중/PP/분류/타입/설명
     for slug in [m["move"] for m in moves["level_up"]] + moves["machine"]:
         if slug not in move_names_ko:
             move_json = fetcher.get_json(f"{POKEAPI_BASE}/move/{slug}")
-            move_names_ko[slug] = extract_move_name_ko(move_json)
+            name_ko = extract_move_name_ko(move_json)
+            move_names_ko[slug] = name_ko
+            move_details_ko[name_ko] = extract_move_details(move_json)
 
     evolution_chain_data = fetcher.get_json(species["evolution_chain"]["url"])
     raw_edges = extract_evolution_chain(evolution_chain_data)
@@ -132,5 +136,6 @@ def build_pokemon_record(name_en: str, fetcher) -> dict:
             ],
             "machine": [move_names_ko[m] for m in moves["machine"]],
         },
+        "move_details": move_details_ko,
         "sv_locations": sv_locations,
     }

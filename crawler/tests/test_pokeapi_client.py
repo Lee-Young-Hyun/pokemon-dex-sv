@@ -10,6 +10,7 @@ from crawler.pokeapi_client import (
     extract_evolution_chain,
     extract_image_url,
     default_variety_name,
+    extract_move_details,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -140,3 +141,37 @@ def test_default_variety_name_falls_back_to_species_name_without_varieties():
     species_data = {"name": "pikachu", "varieties": [{"is_default": True, "pokemon": {"name": "pikachu"}}]}
 
     assert default_variety_name(species_data) == "pikachu"
+
+
+def test_extract_move_details_returns_stats_and_korean_description():
+    move_data = load_fixture("move_thunderbolt.json")
+
+    result = extract_move_details(move_data)
+
+    assert result["power"] == 90
+    assert result["accuracy"] == 100
+    assert result["pp"] == 15
+    assert result["category"] == "특수"
+    assert result["type"] == "전기"
+    # 스칼렛/바이올렛 한글 설명이 없으면(PokeAPI 한글 데이터는 8세대까지만 있음),
+    # 가장 최근에 있는 한글 버전(소드실드)으로 대체한다. 줄바꿈은 보존한다.
+    assert result["description"] == "강한 전격을\n상대에게 날려서 공격한다.\n마비 상태로 만들 때가 있다."
+
+
+def test_extract_move_details_handles_status_move_without_power_or_accuracy():
+    move_data = {
+        "power": None,
+        "accuracy": None,
+        "pp": 20,
+        "damage_class": {"name": "status"},
+        "type": {"name": "psychic"},
+        "flavor_text_entries": [],
+    }
+
+    result = extract_move_details(move_data)
+
+    assert result["power"] is None
+    assert result["accuracy"] is None
+    assert result["category"] == "변화"
+    assert result["type"] == "에스퍼"
+    assert result["description"] is None
