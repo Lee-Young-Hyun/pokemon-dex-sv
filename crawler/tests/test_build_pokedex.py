@@ -1,4 +1,4 @@
-from crawler.build_pokedex import bulbapedia_url
+from crawler.build_pokedex import bulbapedia_url, localize_evolve_from
 
 
 def test_bulbapedia_url_for_single_word_species():
@@ -18,3 +18,27 @@ def test_bulbapedia_url_for_species_with_a_real_hyphen_in_the_name():
     assert bulbapedia_url("chien-pao") == "https://bulbapedia.bulbagarden.net/wiki/Chien-Pao_(Pok%C3%A9mon)"
     assert bulbapedia_url("ting-lu") == "https://bulbapedia.bulbagarden.net/wiki/Ting-Lu_(Pok%C3%A9mon)"
     assert bulbapedia_url("chi-yu") == "https://bulbapedia.bulbagarden.net/wiki/Chi-Yu_(Pok%C3%A9mon)"
+
+
+def test_localize_evolve_from_replaces_english_species_name_with_korean():
+    # bulbapedia_scraper는 "Sprigatito에서 진화"처럼 영문 종 이름을 그대로 쓴다.
+    # 같은 포켓몬의 진화 정보에 이미 있는 한글 이름(나오하)으로 바꿔준다.
+    locations = {
+        "base_game": ["Sprigatito에서 진화", "서부지방 3번 구역"],
+        "dlc": ["Sprigatito에서 진화"],
+    }
+
+    result = localize_evolve_from(locations, "나오하")
+
+    assert result == {
+        "base_game": ["나오하에서 진화", "서부지방 3번 구역"],
+        "dlc": ["나오하에서 진화"],
+    }
+
+
+def test_localize_evolve_from_leaves_untouched_when_pre_evolution_unknown():
+    locations = {"base_game": ["Sprigatito에서 진화"], "dlc": []}
+
+    result = localize_evolve_from(locations, None)
+
+    assert result == {"base_game": ["Sprigatito에서 진화"], "dlc": []}

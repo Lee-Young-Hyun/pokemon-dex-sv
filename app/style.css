@@ -66,18 +66,25 @@
   --tag-text: #cfc6e0;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; min-width: 0; }
 
 html, body { margin: 0; }
+
+html {
+  overflow-x: hidden;
+}
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: "Gothic A1", "Malgun Gothic", sans-serif;
   padding: 20px 16px 48px;
+  overflow-x: hidden;
 }
 
-.wrap { max-width: 720px; margin: 0 auto; }
+img { max-width: 100%; }
+
+.wrap { max-width: 720px; margin: 0 auto; width: 100%; }
 
 h1 {
   font-family: "Black Han Sans", "Gothic A1", sans-serif;
@@ -208,14 +215,22 @@ section.block h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1
 .evo-node {
   padding: 7px 14px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border);
   font-size: 14px; font-weight: 700; font-family: inherit; color: var(--text); cursor: default;
+  white-space: nowrap;
 }
 button.evo-node { cursor: pointer; transition: transform 0.08s ease, border-color 0.15s ease; }
 button.evo-node:hover { border-color: var(--accent); transform: translateY(-1px); }
 button.evo-node:disabled { cursor: not-allowed; color: var(--text-muted); opacity: 0.6; }
 .evo-node.current { background: var(--accent); color: #fff; border-color: var(--accent); }
-.evo-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 2px; }
-.evo-arrow svg { color: var(--text-muted); }
+.evo-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 2px; flex: 0 0 auto; }
+.evo-arrow svg { color: var(--text-muted); flex: 0 0 auto; }
 .evo-arrow .cond { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+/* 좁은 화면에서는 가로로 이어붙이면 중간에 어색하게 끊기므로 세로로 쌓는다 */
+@media (max-width: 420px) {
+  .evo-chain { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .evo-arrow { flex-direction: row; align-items: center; gap: 6px; padding: 2px 0 2px 16px; }
+  .evo-arrow svg { transform: rotate(90deg); }
+}
 .evo-single { color: var(--text-muted); font-size: 14px; }
 
 .moves-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }

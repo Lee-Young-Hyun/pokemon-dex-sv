@@ -26,9 +26,19 @@ SUSPICIOUS_KEYWORDS = [
 ]
 
 
+def _is_english_evolve_from(loc: str) -> bool:
+    # "Sprigatito에서 진화"처럼 접두어가 한글이 아니면(영문 종 이름 그대로 남았으면) 의심.
+    if not loc.endswith("에서 진화"):
+        return False
+    prefix = loc[: -len("에서 진화")]
+    return not any("가" <= ch <= "힣" for ch in prefix)  # 한글 완성형 범위
+
+
 def is_suspicious(record: dict) -> bool:
     all_locs = record["sv_locations"]["base_game"] + record["sv_locations"]["dlc"]
-    return any(kw in loc for loc in all_locs for kw in SUSPICIOUS_KEYWORDS)
+    if any(kw in loc for loc in all_locs for kw in SUSPICIOUS_KEYWORDS):
+        return True
+    return any(_is_english_evolve_from(loc) for loc in all_locs)
 
 
 def main() -> None:

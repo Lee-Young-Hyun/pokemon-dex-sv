@@ -49,6 +49,25 @@ def bulbapedia_url(name_en: str) -> str:
     return f"https://bulbapedia.bulbagarden.net/wiki/{title}_(Pok%C3%A9mon)"
 
 
+def localize_evolve_from(locations: dict, pre_evolution_ko: str | None) -> dict:
+    """"<영문 종 이름>에서 진화" 형태의 문자열을 한글 이름으로 바꾼다.
+
+    bulbapedia_scraper는 Bulbapedia 문서에 적힌 영문 이름을 그대로 쓰므로,
+    이미 같은 포켓몬의 진화 정보에서 알아낸 한글 이름(pre_evolution_ko)으로 치환한다.
+    pre_evolution_ko를 모르면(None) 원문을 그대로 둔다.
+    """
+
+    def fix(loc: str) -> str:
+        if pre_evolution_ko and loc.endswith("에서 진화"):
+            return f"{pre_evolution_ko}에서 진화"
+        return loc
+
+    return {
+        "base_game": [fix(l) for l in locations["base_game"]],
+        "dlc": [fix(l) for l in locations["dlc"]],
+    }
+
+
 def build_pokemon_record(name_en: str, fetcher) -> dict:
     """PokeAPI 슬러그(name_en) 하나에 대해 도감 레코드를 만든다."""
     species = fetcher.get_json(f"{POKEAPI_BASE}/pokemon-species/{name_en}")
@@ -92,6 +111,13 @@ def build_pokemon_record(name_en: str, fetcher) -> dict:
     table_html = find_locations_table_html(full_page_html)
     sv_locations_raw = extract_sv_locations(table_html) if table_html else {"base_game": [], "dlc": []}
     sv_locations = translate_locations(sv_locations_raw)
+
+    # sv_locations에 "<영문 종 이름>에서 진화"가 있으면, 바로 이 종의 직전 진화형
+    # 한글 이름(이미 위에서 알아냈다)으로 바꾼다.
+    pre_evolution_ko = next(
+        (species_name_ko(edge["from"]) for edge in raw_edges if edge["to"] == name_en), None
+    )
+    sv_locations = localize_evolve_from(sv_locations, pre_evolution_ko)
 
     return {
         "dex_number": basic["dex_number"],
