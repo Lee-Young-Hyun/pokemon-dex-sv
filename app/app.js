@@ -58,7 +58,14 @@ function renderLocations(loc) {
   }).join('') + '</div>';
 }
 
+let currentMoveDetails = {};
+
+function moveButton(name, extraClass) {
+  return `<button type="button" class="move-name ${extraClass || ''}" data-move="${name}">${name}</button>`;
+}
+
 function renderDetail(mon) {
+  currentMoveDetails = mon.move_details || {};
   const el = document.getElementById('detail-card');
   el.innerHTML = `
     <div class="detail-head">
@@ -76,17 +83,17 @@ function renderDetail(mon) {
     </section>
 
     <section class="block">
-      <h3>기술</h3>
+      <h3>기술 <span class="hint">(이름을 탭하면 세부정보)</span></h3>
       <div class="moves-grid">
         <div class="moves-col">
           <h4>레벨업 (${mon.moves.level_up.length})</h4>
           <ul class="move-list">
-            ${mon.moves.level_up.map(m => `<li><span>${m.move}</span><span class="lv">Lv.${m.level}</span></li>`).join('')}
+            ${mon.moves.level_up.map(m => `<li>${moveButton(m.move)}<span class="lv">Lv.${m.level}</span></li>`).join('')}
           </ul>
         </div>
         <div class="moves-col">
           <h4>기술머신 (${mon.moves.machine.length})</h4>
-          <div class="tm-tags">${mon.moves.machine.map(m => `<span class="tag">${m}</span>`).join('')}</div>
+          <div class="tm-tags">${mon.moves.machine.map(m => moveButton(m, 'tag')).join('')}</div>
         </div>
       </div>
     </section>
@@ -107,8 +114,54 @@ function goToPokemon(name) {
 }
 
 document.getElementById('detail-card').addEventListener('click', (e) => {
-  const btn = e.target.closest('button[data-goto]');
-  if (btn) goToPokemon(btn.dataset.goto);
+  const gotoBtn = e.target.closest('button[data-goto]');
+  if (gotoBtn) { goToPokemon(gotoBtn.dataset.goto); return; }
+
+  const moveBtn = e.target.closest('button[data-move]');
+  if (moveBtn) showMoveTooltip(moveBtn.dataset.move);
+});
+
+// --- 기술 세부정보 툴팁 ---
+const tooltipBackdrop = document.getElementById('move-tooltip-backdrop');
+const tooltipCard = document.getElementById('move-tooltip-card');
+
+function statRow(label, value) {
+  return `<div class="tooltip-stat"><span class="tooltip-stat-label">${label}</span><span class="tooltip-stat-value">${value}</span></div>`;
+}
+
+function showMoveTooltip(name) {
+  const d = currentMoveDetails[name];
+  tooltipCard.innerHTML = `
+    <button type="button" class="tooltip-close" id="tooltip-close" aria-label="닫기">✕</button>
+    <div class="tooltip-header">
+      <span class="tooltip-name">${name}</span>
+      ${d ? typePill(d.type) : ''}
+    </div>
+    ${d ? `
+      <div class="tooltip-stats">
+        ${statRow('분류', d.category)}
+        ${statRow('위력', d.power ?? '-')}
+        ${statRow('명중률', d.accuracy != null ? d.accuracy + '%' : '-')}
+        ${statRow('PP', d.pp ?? '-')}
+      </div>
+      ${d.description ? `<p class="tooltip-desc">${d.description.replace(/\n/g, '<br>')}</p>` : ''}
+    ` : `<p class="tooltip-desc">세부 정보를 찾을 수 없습니다.</p>`}
+  `;
+  tooltipBackdrop.hidden = false;
+}
+
+function hideMoveTooltip() {
+  tooltipBackdrop.hidden = true;
+}
+
+tooltipBackdrop.addEventListener('click', (e) => {
+  // 카드 바깥(배경) 클릭 또는 닫기 버튼 클릭 시 닫는다
+  if (e.target === tooltipBackdrop || e.target.closest('#tooltip-close')) {
+    hideMoveTooltip();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !tooltipBackdrop.hidden) hideMoveTooltip();
 });
 
 // --- 검색/자동완성 ---
