@@ -9,6 +9,20 @@ from bs4 import BeautifulSoup
 BASE_GAME_TITLE = "Pokémon Scarlet and Violet"
 DLC_TITLE = "The Hidden Treasure of Area Zero"
 
+# 확인된(자신 있는) 지역명·명칭만 담는다. DLC(키타카미) 세부 지역명처럼 공식 한글 명칭을
+# 확신할 수 없는 이름은 표에 넣지 않고 원문(영문)을 그대로 둔다 - 틀린 이름을 사실처럼
+# 내보내는 것보다, 확인 전까지 영문으로 남겨두는 쪽이 안전하다.
+LOCATION_NAME_KO = {
+    "South Province (Area Two)": "남부지방 2번 구역",
+    "South Province (Area Four)": "남부지방 4번 구역",
+    "East Province (Area One)": "동부지방 1번 구역",
+    "West Province (Area Three)": "서부지방 3번 구역",
+    "Artazon": "아르타존",
+    "Tera Raid Battle": "테라레이드 배틀",
+    "List of 2★ Tera Raid Battles (Paldea)": "테라레이드 배틀(2성)",
+    "List of 3★ Tera Raid Battles (Paldea)": "테라레이드 배틀(3성)",
+}
+
 
 def find_locations_table_html(full_page_html: str) -> str | None:
     """Bulbapedia 포켓몬 페이지 전체 HTML에서 'Game locations' 표를 찾아 그 부분만 반환한다.
@@ -62,3 +76,14 @@ def extract_sv_locations(table_html: str) -> dict:
             pending_titles = []
 
     return result
+
+
+def translate_locations(locations: dict) -> dict:
+    """extract_sv_locations 결과의 영문 지역명을 한글로 바꾼다.
+
+    매핑 표(LOCATION_NAME_KO)에 없는 이름은 번역하지 않고 원문을 그대로 남긴다.
+    """
+    return {
+        "base_game": [LOCATION_NAME_KO.get(name, name) for name in locations["base_game"]],
+        "dlc": [LOCATION_NAME_KO.get(name, name) for name in locations["dlc"]],
+    }

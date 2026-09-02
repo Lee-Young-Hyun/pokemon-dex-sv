@@ -5,7 +5,11 @@
 피카츄 1마리를 종단간으로 돌려서 결과물을 직접 확인하는 방식으로 검증한다.
 """
 
-from crawler.bulbapedia_scraper import extract_sv_locations, find_locations_table_html
+from crawler.bulbapedia_scraper import (
+    extract_sv_locations,
+    find_locations_table_html,
+    translate_locations,
+)
 from crawler.pokeapi_client import (
     extract_basic_info,
     extract_evolution_chain,
@@ -59,7 +63,8 @@ def build_pokemon_record(name_en: str, fetcher) -> dict:
 
     full_page_html = fetcher.get_html(_bulbapedia_url(name_en))
     table_html = find_locations_table_html(full_page_html)
-    sv_locations = extract_sv_locations(table_html) if table_html else {"base_game": [], "dlc": []}
+    sv_locations_raw = extract_sv_locations(table_html) if table_html else {"base_game": [], "dlc": []}
+    sv_locations = translate_locations(sv_locations_raw)
 
     return {
         "dex_number": basic["dex_number"],

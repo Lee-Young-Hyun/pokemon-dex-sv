@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from crawler.bulbapedia_scraper import extract_sv_locations
+from crawler.bulbapedia_scraper import extract_sv_locations, translate_locations
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -37,3 +37,17 @@ def test_extract_sv_locations_splits_base_game_and_dlc():
     # 이 포켓몬과 무관한 다른 게임(Legends: Z-A 등) 정보는 섞이지 않는다
     assert "Vert Sector 8" not in result["base_game"]
     assert "Vert Sector 8" not in result["dlc"]
+
+
+def test_translate_locations_converts_known_names_to_korean():
+    raw = {
+        "base_game": ["South Province (Area Two)", "Artazon", "Tera Raid Battle"],
+        "dlc": ["Kitakami Road"],  # 매핑 표에 없는 이름 -> 번역 실패해도 원문 유지
+    }
+
+    result = translate_locations(raw)
+
+    assert result == {
+        "base_game": ["남부지방 2번 구역", "아르타존", "테라레이드 배틀"],
+        "dlc": ["Kitakami Road"],
+    }

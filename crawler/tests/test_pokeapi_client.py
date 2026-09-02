@@ -55,7 +55,19 @@ def test_format_evolution_condition_for_item_use():
         "item": {"name": "thunder-stone"},
     }
 
-    assert format_evolution_condition(detail) == "아이템(thunder-stone) 사용"
+    assert format_evolution_condition(detail) == "아이템(번개의돌) 사용"
+
+
+def test_format_evolution_condition_for_unknown_item_keeps_english_name():
+    detail = {
+        "trigger": {"name": "use-item"},
+        "min_level": None,
+        "min_happiness": None,
+        "item": {"name": "some-未知-item"},
+    }
+
+    # 매핑 표에 없는 아이템은 번역 실패해도 원문 이름을 그대로 보여준다
+    assert format_evolution_condition(detail) == "아이템(some-未知-item) 사용"
 
 
 def test_extract_moves_splits_level_up_and_machine_for_scarlet_violet():
@@ -90,5 +102,5 @@ def test_extract_evolution_chain_returns_ordered_edges_with_conditions():
 
     assert edges == [
         {"from": "pichu", "to": "pikachu", "condition": "친밀도 220 이상"},
-        {"from": "pikachu", "to": "raichu", "condition": "아이템(thunder-stone) 사용"},
+        {"from": "pikachu", "to": "raichu", "condition": "아이템(번개의돌) 사용"},
     ]

@@ -22,6 +22,20 @@ TYPE_NAME_KO = {
     "fairy": "페어리",
 }
 
+# 확인된 진화 아이템명만 담는다. 매핑 표에 없는 아이템은 영문 슬러그를 그대로 남긴다.
+EVOLUTION_ITEM_NAME_KO = {
+    "thunder-stone": "번개의돌",
+    "fire-stone": "불꽃의돌",
+    "water-stone": "물의돌",
+    "leaf-stone": "리프의돌",
+    "moon-stone": "달의돌",
+    "sun-stone": "태양의돌",
+    "shiny-stone": "빛의돌",
+    "dusk-stone": "어둠의돌",
+    "dawn-stone": "각성의돌",
+    "ice-stone": "얼음의돌",
+}
+
 
 def _korean_name(names: list[dict]) -> str:
     """PokeAPI의 names 배열(species/move 등 공통 형태)에서 한글 이름을 뽑는다."""
@@ -82,7 +96,9 @@ def format_evolution_condition(detail: dict) -> str:
     if detail.get("min_level") is not None:
         return f"레벨 {detail['min_level']} 이상"
     if trigger == "use-item" and detail.get("item"):
-        return f"아이템({detail['item']['name']}) 사용"
+        item_name = detail["item"]["name"]
+        item_name_ko = EVOLUTION_ITEM_NAME_KO.get(item_name, item_name)
+        return f"아이템({item_name_ko}) 사용"
 
     return "조건 불명"
 
