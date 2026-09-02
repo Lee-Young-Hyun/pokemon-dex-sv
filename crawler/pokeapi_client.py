@@ -23,15 +23,22 @@ TYPE_NAME_KO = {
 }
 
 
+def _korean_name(names: list[dict]) -> str:
+    """PokeAPI의 names 배열(species/move 등 공통 형태)에서 한글 이름을 뽑는다."""
+    return next(n["name"] for n in names if n["language"]["name"] == "ko")
+
+
 def extract_basic_info(species_data: dict) -> dict:
     """species 엔드포인트 JSON에서 도감번호와 한글 이름을 추출한다."""
-    name_ko = next(
-        n["name"] for n in species_data["names"] if n["language"]["name"] == "ko"
-    )
     return {
         "dex_number": species_data["id"],
-        "name_ko": name_ko,
+        "name_ko": _korean_name(species_data["names"]),
     }
+
+
+def extract_move_name_ko(move_data: dict) -> str:
+    """move 엔드포인트 JSON에서 한글 기술 이름을 추출한다."""
+    return _korean_name(move_data["names"])
 
 
 def extract_types(pokemon_data: dict) -> list[str]:
@@ -52,3 +59,28 @@ def format_evolution_condition(detail: dict) -> str:
         return f"아이템({detail['item']['name']}) 사용"
 
     return "조건 불명"
+
+
+def extract_moves(pokemon_data: dict, version_group: str = "scarlet-violet") -> dict:
+    """pokemon 엔드포인트 JSON에서 지정한 버전 그룹의 기술을 학습 방법별로 나눠 추출한다.
+
+    반환값:
+        level_up: [{"move": 기술영문슬러그, "level": 레벨}, ...] (레벨 오름차순)
+        machine: [기술영문슬러그, ...] (이름순, 기술머신으로 배우는 기술)
+    """
+    level_up = []
+    machine = set()
+
+    for move_entry in pokemon_data["moves"]:
+        move_name = move_entry["move"]["name"]
+        for vgd in move_entry["version_group_details"]:
+            if vgd["version_group"]["name"] != version_group:
+                continue
+            method = vgd["move_learn_method"]["name"]
+            if method == "level-up":
+                level_up.append({"move": move_name, "level": vgd["level_learned_at"]})
+            elif method == "machine":
+                machine.add(move_name)
+
+    level_up.sort(key=lambda m: m["level"])
+    return {"level_up": level_up, "machine": sorted(machine)}

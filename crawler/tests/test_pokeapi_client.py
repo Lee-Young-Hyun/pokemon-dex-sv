@@ -5,6 +5,8 @@ from crawler.pokeapi_client import (
     extract_basic_info,
     extract_types,
     format_evolution_condition,
+    extract_moves,
+    extract_move_name_ko,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -53,3 +55,28 @@ def test_format_evolution_condition_for_item_use():
     }
 
     assert format_evolution_condition(detail) == "아이템(thunder-stone) 사용"
+
+
+def test_extract_moves_splits_level_up_and_machine_for_scarlet_violet():
+    pokemon_data = load_fixture("pikachu_pokemon.json")
+
+    result = extract_moves(pokemon_data, version_group="scarlet-violet")
+
+    # 레벨업 기술은 레벨 오름차순으로 정렬되고, 레벨 1 기술이 여럿 포함된다
+    assert result["level_up"][0] == {"move": "tail-whip", "level": 1}
+    assert all(
+        result["level_up"][i]["level"] <= result["level_up"][i + 1]["level"]
+        for i in range(len(result["level_up"]) - 1)
+    )
+    assert len(result["level_up"]) == 20
+
+    # 기술머신 기술은 이름순으로 정렬된 문자열 리스트
+    assert result["machine"][0] == "agility"
+    assert "thunderbolt" in result["machine"]
+    assert len(result["machine"]) == 47
+
+
+def test_extract_move_name_ko_returns_korean_move_name():
+    move_data = load_fixture("move_thunderbolt.json")
+
+    assert extract_move_name_ko(move_data) == "10만볼트"
