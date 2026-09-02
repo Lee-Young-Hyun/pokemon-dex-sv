@@ -9,9 +9,9 @@ from bs4 import BeautifulSoup
 BASE_GAME_TITLE = "Pokémon Scarlet and Violet"
 DLC_TITLE = "The Hidden Treasure of Area Zero"
 
-# 확인된(자신 있는) 지역명·명칭만 담는다. DLC(키타카미) 세부 지역명처럼 공식 한글 명칭을
-# 확신할 수 없는 이름은 표에 넣지 않고 원문(영문)을 그대로 둔다 - 틀린 이름을 사실처럼
-# 내보내는 것보다, 확인 전까지 영문으로 남겨두는 쪽이 안전하다.
+# 확인된(자신 있는) 지역명·명칭만 담는다. 공식 한글 명칭을 확신할 수 없는 이름은
+# 표에 넣지 않고 원문(영문)을 그대로 둔다 - 틀린 이름을 사실처럼 내보내는 것보다,
+# 확인 전까지 영문으로 남겨두는 쪽이 안전하다.
 LOCATION_NAME_KO = {
     "South Province (Area Two)": "남부지방 2번 구역",
     "South Province (Area Four)": "남부지방 4번 구역",
@@ -21,6 +21,23 @@ LOCATION_NAME_KO = {
     "Tera Raid Battle": "테라레이드 배틀",
     "List of 2★ Tera Raid Battles (Paldea)": "테라레이드 배틀(2성)",
     "List of 3★ Tera Raid Battles (Paldea)": "테라레이드 배틀(3성)",
+    # DLC(벽록의 가면 - 키타카미) — 나무위키·Fandom 한글 위키 교차 검증
+    "Kitakami Road": "북신 가도",
+    "Apple Hills": "애플 힐스",
+    "Oni Mountain": "도깨비산",
+    "Wistful Fields": "등꽃 들판",
+    "Paradise Barrens": "낙원의 황무지",
+    "Kitakami Wilds": "북신 원생지역",
+    "Timeless Woods": "영겁의 숲",
+    "Kitakami Hall": "북신센터",
+    "Mossfell Confluence": "북신 합류지",
+    "Infernal Pass": "지옥골",
+    "Loyalty Plaza": "세벗 플라자",
+    # DLC(남청의 원반 - 블루베리 아카데미) 테라리움 4개 구역 — 나무위키 확인
+    "Savanna Biome": "사바나",
+    "Coastal Biome": "코스트",
+    "Canyon Biome": "캐니언",
+    "Polar Biome": "폴라",
 }
 
 

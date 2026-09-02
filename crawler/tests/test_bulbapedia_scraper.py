@@ -74,12 +74,23 @@ def test_extract_sv_locations_filters_out_meta_links_from_mixed_form_cell():
 def test_translate_locations_converts_known_names_to_korean():
     raw = {
         "base_game": ["South Province (Area Two)", "Artazon", "Tera Raid Battle"],
-        "dlc": ["Kitakami Road"],  # 매핑 표에 없는 이름 -> 번역 실패해도 원문 유지
+        "dlc": ["Reveler's Road"],  # 매핑 표에 없는 이름 -> 번역 실패해도 원문 유지
     }
 
     result = translate_locations(raw)
 
     assert result == {
         "base_game": ["남부지방 2번 구역", "아르타존", "테라레이드 배틀"],
-        "dlc": ["Kitakami Road"],
+        "dlc": ["Reveler's Road"],
     }
+
+
+def test_translate_locations_converts_dlc_kitakami_and_blueberry_names():
+    raw = {
+        "base_game": [],
+        "dlc": ["Kitakami Road", "Oni Mountain", "Savanna Biome", "Polar Biome"],
+    }
+
+    result = translate_locations(raw)
+
+    assert result["dlc"] == ["북신 가도", "도깨비산", "사바나", "폴라"]
